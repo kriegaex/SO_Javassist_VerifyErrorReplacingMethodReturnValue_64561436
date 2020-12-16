@@ -30,12 +30,9 @@ public class JavassistMethodReturnValueReplacer implements ClassFileTransformer 
   private final Set<String> targetClasses;
 
   public static void main(String[] args) throws UnmodifiableClassException {
-    System.out.println(TargetClass.class.getCanonicalName());
-    System.out.println(new TargetClass().greet("world"));
     Instrumentation instrumentation = ByteBuddyAgent.install();
     instrumentation.addTransformer(new JavassistMethodReturnValueReplacer(TargetClass.class), true);
     instrumentation.retransformClasses(TargetClass.class);
-    System.out.println(new TargetClass().greet("world"));
   }
 
   public JavassistMethodReturnValueReplacer(Class<?>... targetClasses) {
@@ -128,11 +125,12 @@ public class JavassistMethodReturnValueReplacer implements ClassFileTransformer 
     // Fails in Javassist without ASM stack map repair
     String injectedCode = "return null;";
     // Works in Javassist without ASM stack map repair
-    // String injectedCode = "if (true) return null;"
+    // String injectedCode = "if (true) return null;";
+
     for (CtMethod ctMethod : targetClass.getDeclaredMethods()) {
       if (LOG_RETURN_VALUE_REPLACER) {
         log("Replacing return value for method " + ctMethod.getLongName());
-        log(injectedCode);
+        log("Injected code: " + injectedCode);
       }
       ctMethod.insertBefore(injectedCode);
     }
